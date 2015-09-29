@@ -2152,9 +2152,9 @@ class TestPerformanceTracker(unittest.TestCase):
         env = TradingEnvironment()
 
         metadata = {4: {'symbol': 'TEST4', 'asset_type': 'future', 'children':
-                        json.dumps([5])},
+                        json.dumps(['TEST5'])},
                     5: {'symbol': 'TEST5', 'asset_type': 'future',
-                        'children': json.dumps([4, 6])
+                        'children': json.dumps(['TEST4', 'TEST6'])
                         },
                     6: {'symbol': 'TEST6', 'asset_type': 'future'}}
         env.write_data(futures_data=metadata)
