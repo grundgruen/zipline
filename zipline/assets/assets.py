@@ -48,7 +48,6 @@ _asset_str_fields = frozenset({
     'symbol',
     'asset_name',
     'exchange',
-    'children',
 })
 
 # A set of fields that need to be converted to timestamps in UTC
