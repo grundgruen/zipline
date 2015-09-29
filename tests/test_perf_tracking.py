@@ -22,6 +22,7 @@ from datetime import (
 )
 import logging
 import operator
+import json
 
 import unittest
 from nose_parameterized import parameterized
@@ -39,7 +40,6 @@ import zipline.finance.performance as perf
 from zipline.finance.performance import position_tracker
 from zipline.finance.slippage import Transaction, create_transaction
 import zipline.utils.math_utils as zp_math
-from zipline.finance.trading import TradingEnvironment
 
 from zipline.gens.composites import date_sorted_sources
 from zipline.finance.trading import SimulationParameters
@@ -2150,10 +2150,13 @@ class TestPerformanceTracker(unittest.TestCase):
 
     def test_cascade(self):
         env = TradingEnvironment()
-        metadata = {4: {'asset_type': 'future', 'children': json.dumps([5])},
-                    5: {'asset_type': 'future', 'children': json.dumps([4,
-                                                                       6])},
-                    6: {'asset_type': 'future'}}
+
+        metadata = {4: {'symbol': 'TEST4', 'asset_type': 'future', 'children':
+                        json.dumps([5])},
+                    5: {'symbol': 'TEST5', 'asset_type': 'future',
+                        'children': json.dumps([4, 6])
+                        },
+                    6: {'symbol': 'TEST6', 'asset_type': 'future'}}
         env.write_data(futures_data=metadata)
         pt = perf.PositionTracker(env.asset_finder)
         dt = pd.Timestamp("1984/03/06 3:00PM")
