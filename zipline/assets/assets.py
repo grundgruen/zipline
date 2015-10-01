@@ -296,6 +296,7 @@ class AssetFinder(object):
             if len(sids) == 1:
                 return self._retrieve_equity(sids[0]['sid'])
             elif not sids:
+                self.lookup_future(symbol)
                 raise SymbolNotFound(symbol=symbol)
             else:
                 raise MultipleSymbolsFound(
