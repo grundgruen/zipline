@@ -56,7 +56,7 @@ _futures_defaults = {
     'expiration_date': None,
     'auto_close_date': None,
     'contract_multiplier': 1,
-    'children': "",
+    'children': None,
 }
 
 # Default values for the exchanges DataFrame
