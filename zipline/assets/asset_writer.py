@@ -33,7 +33,6 @@ SQLITE_MAX_VARIABLE_NUMBER = 999
 # Define a namedtuple for use with the load_data and _load_data methods
 AssetData = namedtuple('AssetData', 'equities futures exchanges root_symbols')
 
-
 # Default values for the equities DataFrame
 _equities_defaults = {
     'symbol': None,
@@ -57,6 +56,7 @@ _futures_defaults = {
     'expiration_date': None,
     'auto_close_date': None,
     'contract_multiplier': 1,
+    'children': "",
 }
 
 # Default values for the exchanges DataFrame
@@ -361,6 +361,7 @@ class AssetDBWriter(with_metaclass(ABCMeta)):
             sa.Column('expiration_date', sa.Integer, nullable=False),
             sa.Column('auto_close_date', sa.Integer, nullable=False),
             sa.Column('contract_multiplier', sa.Float),
+            sa.Column('children', sa.Text),
         )
         self.asset_router = sa.Table(
             'asset_router',
