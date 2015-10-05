@@ -16,6 +16,7 @@ from abc import ABCMeta
 from numbers import Integral
 from operator import itemgetter
 import warnings
+import json
 
 from logbook import Logger
 import numpy as np
@@ -47,6 +48,7 @@ _asset_str_fields = frozenset({
     'symbol',
     'asset_name',
     'exchange',
+    'children',
 })
 
 # A set of fields that need to be converted to timestamps in UTC
@@ -190,6 +192,9 @@ class AssetFinder(object):
         data = dict(data.items())
         if data:
             _convert_asset_timestamp_fields(data)
+            if 'children' in data.keys():
+                if data['children']:
+                    data['children'] = json.loads(data['children'])
 
             asset = asset_type(**data)
         else:
