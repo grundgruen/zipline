@@ -228,6 +228,7 @@ cdef class Future(Asset):
     cdef readonly object notice_date
     cdef readonly object expiration_date
     cdef readonly object auto_close_date
+    cdef readonly object children
     cdef readonly float contract_multiplier
 
     def __cinit__(self,
@@ -242,12 +243,14 @@ cdef class Future(Asset):
                   object auto_close_date=None,
                   object first_traded=None,
                   object exchange="",
-                  float contract_multiplier=1):
+                  float contract_multiplier=1,
+                  object children=""):
 
         self.root_symbol         = root_symbol
         self.notice_date         = notice_date
         self.expiration_date     = expiration_date
         self.auto_close_date     = auto_close_date
+        self.children            = children
         self.contract_multiplier = contract_multiplier
 
     def __str__(self):
@@ -259,7 +262,8 @@ cdef class Future(Asset):
     def __repr__(self):
         attrs = ('symbol', 'root_symbol', 'asset_name', 'exchange',
                  'start_date', 'end_date', 'first_traded', 'notice_date',
-                 'expiration_date', 'auto_close_date', 'contract_multiplier')
+                 'expiration_date', 'auto_close_date', 'contract_multiplier',
+                 'children')
         tuples = ((attr, repr(getattr(self, attr, None)))
                   for attr in attrs)
         strings = ('%s=%s' % (t[0], t[1]) for t in tuples)
@@ -284,6 +288,7 @@ cdef class Future(Asset):
                                  self.auto_close_date,
                                  self.first_traded,
                                  self.exchange,
+                                 self.children,
                                  self.contract_multiplier,))
 
     cpdef to_dict(self):
@@ -295,6 +300,7 @@ cdef class Future(Asset):
         super_dict['notice_date'] = self.notice_date
         super_dict['expiration_date'] = self.expiration_date
         super_dict['auto_close_date'] = self.auto_close_date
+        super_dict['children'] = self.children
         super_dict['contract_multiplier'] = self.contract_multiplier
         return super_dict
 
