@@ -22,7 +22,6 @@ from datetime import (
 )
 import logging
 import operator
-import json
 
 import unittest
 from nose_parameterized import parameterized
