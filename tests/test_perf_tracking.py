@@ -2153,8 +2153,7 @@ class TestPerformanceTracker(unittest.TestCase):
         metadata = {4: {'symbol': 'TEST4', 'asset_type': 'future', 'children':
                         json.dumps(['TEST5'])},
                     5: {'symbol': 'TEST5', 'asset_type': 'future',
-                        'children': json.dumps(['TEST4', 'TEST6'])
-                        },
+                        'children': json.dumps(['TEST4', 'TEST6'])},
                     6: {'symbol': 'TEST6', 'asset_type': 'future'}}
         env.write_data(futures_data=metadata)
         pt = perf.PositionTracker(env.asset_finder)

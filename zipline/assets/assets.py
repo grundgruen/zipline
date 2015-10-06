@@ -275,7 +275,7 @@ class AssetFinder(object):
                 ).scalar()
                 if sid is not None:
                     return self._retrieve_equity(sid)
-            return self.lookup_future(symbol)
+
             raise SymbolNotFound(symbol=symbol)
 
         else:
