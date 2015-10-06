@@ -444,7 +444,7 @@ class PositionTracker(object):
         ))
 
         for child in asset.children:
-            sid = self.asset_finder.lookup_future(child).sid
+            sid = self.asset_finder.lookup_future_symbol(child).sid
             txns.append(Transaction(
                 sid=sid,
                 amount=self.positions[event.sid].amount,
