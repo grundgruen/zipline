@@ -342,6 +342,9 @@ class AssetFinder(object):
         # Build the Future object from its parameters
         data = dict(data.items())
         _convert_asset_timestamp_fields(data)
+        if data['children']:
+                    data['children'] = json.loads(data['children'])
+
         future = Future(**data)
 
         # Cache the Future object.
