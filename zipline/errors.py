@@ -191,6 +191,13 @@ at frequency '{data_frequency}'.
 """.strip()
 
 
+class HistoryInInitialize(ZiplineError):
+    """
+    Raised when an algorithm calls history() in initialize.
+    """
+    msg = "history() should only be called in handle_data()"
+
+
 class MultipleSymbolsFound(ZiplineError):
     """
     Raised when a symbol() call contains a symbol that changed over
@@ -230,16 +237,6 @@ class SidNotFound(ZiplineError):
     """
     msg = """
 Asset with sid '{sid}' was not found.
-""".strip()
-
-
-class InvalidAssetType(ZiplineError):
-    """
-    Raised when an AssetFinder tries to build an Asset with an invalid
-    AssetType.
-    """
-    msg = """
-AssetMetaData contained an invalid Asset type: '{asset_type}'.
 """.strip()
 
 
@@ -441,4 +438,16 @@ class PositionTrackerMissingAssetFinder(ZiplineError):
         "PositionTracker attempted to update its Asset information but does "
         "not have an AssetFinder. This may be caused by a failure to properly "
         "de-serialize a TradingAlgorithm."
+    )
+
+
+class AssetDBVersionError(ZiplineError):
+    """
+    Raised by an AssetDBWriter or AssetFinder if the version number in the
+    versions table does not match the ASSET_DB_VERSION in asset_writer.py.
+    """
+    msg = (
+        "The existing Asset database has an incorrect version: {db_version}. "
+        "Expected version: {expected_version}. Try rebuilding your asset "
+        "database or updating your version of Zipline."
     )

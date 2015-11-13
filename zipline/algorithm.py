@@ -35,6 +35,7 @@ from operator import attrgetter
 
 from zipline.errors import (
     AttachPipelineAfterInitialize,
+    HistoryInInitialize,
     NoSuchPipeline,
     OrderDuringInitialize,
     OverrideCommissionPostInit,
@@ -269,7 +270,9 @@ class TradingAlgorithm(object):
         self._before_trading_start = None
         self._analyze = None
 
-        self.event_manager = EventManager()
+        self.event_manager = EventManager(
+            create_context=kwargs.pop('create_event_context', None),
+        )
 
         if self.algoscript is not None:
             filename = kwargs.pop('algo_filename', None)
@@ -296,6 +299,7 @@ class TradingAlgorithm(object):
             self._handle_data = kwargs.pop('handle_data')
             self._before_trading_start = kwargs.pop('before_trading_start',
                                                     None)
+            self._analyze = kwargs.pop('analyze', None)
 
         self.event_manager.add_event(
             zipline.utils.events.Event(
@@ -1250,6 +1254,7 @@ class TradingAlgorithm(object):
         return self.history_specs[spec_key]
 
     @api_method
+    @require_initialized(HistoryInInitialize())
     def history(self, bar_count, frequency, field, ffill=True):
         history_spec = self.get_history_spec(
             bar_count,
