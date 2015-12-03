@@ -881,7 +881,7 @@ class TradingAlgorithm(object):
         # Truncate to the integer share count that's either within .0001 of
         # amount or closer to zero.
         # E.g. 3.9999 -> 4.0; 5.5 -> 5.0; -5.5 -> -5.0
-        amount = int(round_if_near_integer(amount))
+        amount = (round_if_near_integer(amount))
 
         # Raises a ZiplineError if invalid parameters are detected.
         self.validate_order_params(sid,
