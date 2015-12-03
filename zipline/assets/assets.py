@@ -483,9 +483,18 @@ class AssetFinder(object):
                             (
                                 fc_cols.expiration_date == pd.NaT.value,
                                 fc_cols.notice_date
+                            ),
+                            (
+                                fc_cols.notice_date == pd.NaT.value,
+                                fc_cols.expiration_date
                             )
                         ],
-                        else_=fc_cols.expiration_date
+                        else_=(
+                            sa.func.min(
+                                fc_cols.notice_date,
+                                fc_cols.expiration_date
+                            )
+                        )
                     ).asc()
                 ).execute().fetchall()
             ))
