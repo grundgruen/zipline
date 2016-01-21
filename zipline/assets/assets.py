@@ -15,6 +15,7 @@
 from abc import ABCMeta
 from numbers import Integral
 from operator import itemgetter
+import json
 
 from logbook import Logger
 import numpy as np
@@ -67,6 +68,11 @@ _asset_timestamp_fields = frozenset({
     'auto_close_date',
 })
 
+# A set of fields that need to be converted from json
+_asset_json_fields = frozenset({
+    'children',
+})
+
 
 def _convert_asset_timestamp_fields(dict_):
     """
@@ -75,6 +81,17 @@ def _convert_asset_timestamp_fields(dict_):
     for key in (_asset_timestamp_fields & viewkeys(dict_)):
         value = pd.Timestamp(dict_[key], tz='UTC')
         dict_[key] = None if isnull(value) else value
+    return dict_
+
+
+def _convert_asset_json_fields(dict_):
+    """
+    Takes in a dict of Asset init args and converts from json
+    """
+    for key in (_asset_json_fields & viewkeys(dict_)):
+        if dict_[key]:
+            dict_[key] = json.loads(dict_[key])
+
     return dict_
 
 
@@ -363,7 +380,8 @@ class AssetFinder(object):
             query = self._select_assets_by_sid(asset_tbl, assets)
 
             for row in imap(dict, query.execute().fetchall()):
-                asset = asset_type(**_convert_asset_timestamp_fields(row))
+                asset = asset_type(**_convert_asset_timestamp_fields(
+                    _convert_asset_json_fields(row)))
                 sid = asset.sid
                 hits[sid] = cache[sid] = asset
 
@@ -631,16 +649,26 @@ class AssetFinder(object):
                         )
                     )
                 ).order_by(
-                    # Sort using expiration_date if valid. If it's NaT,
-                    # use notice_date instead.
+                    # If both dates exist sort using minimum of
+                    # expiration_date and notice_date
+                    # else if one is NaT use the other.
                     sa.case(
                         [
                             (
                                 fc_cols.expiration_date == pd.NaT.value,
                                 fc_cols.notice_date
+                            ),
+                            (
+                                fc_cols.notice_date == pd.NaT.value,
+                                fc_cols.expiration_date
                             )
                         ],
-                        else_=fc_cols.expiration_date
+                        else_=(
+                            sa.func.min(
+                                fc_cols.notice_date,
+                                fc_cols.expiration_date
+                            )
+                        )
                     ).asc()
                 ).execute().fetchall()
             ))

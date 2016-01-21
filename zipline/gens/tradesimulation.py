@@ -208,6 +208,8 @@ class AlgorithmSimulator(object):
         perf_process_commission = self.algo.perf_tracker.process_commission
         perf_process_close_position = \
             self.algo.perf_tracker.process_close_position
+        perf_process_cascade_position = \
+            self.algo.perf_tracker.process_cascade_position
         blotter_process_trade = self.algo.blotter.process_trade
         blotter_process_benchmark = self.algo.blotter.process_benchmark
 
@@ -224,6 +226,7 @@ class AlgorithmSimulator(object):
         trades = []
         customs = []
         closes = []
+        cascades = []
 
         # splits and dividends are processed once a day.
         #
@@ -254,6 +257,8 @@ class AlgorithmSimulator(object):
                 dividends.append(event)
             elif event.type == DATASOURCE_TYPE.CLOSE_POSITION:
                 closes.append(event)
+            elif event.type == DATASOURCE_TYPE.CASCADE_POSITION:
+                cascades.append(event)
             else:
                 raise log.warn("Unrecognized event=%s".format(event))
 
@@ -292,6 +297,10 @@ class AlgorithmSimulator(object):
         for close in closes:
             self.update_universe(close)
             perf_process_close_position(close)
+
+        for cascade in cascades:
+            self.update_universe(cascade)
+            perf_process_cascade_position(cascade)
 
         if splits is not None:
             for split in splits:

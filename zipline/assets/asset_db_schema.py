@@ -121,6 +121,7 @@ def _futures_contracts_schema(metadata):
         sa.Column('expiration_date', sa.Integer, nullable=False),
         sa.Column('auto_close_date', sa.Integer, nullable=False),
         sa.Column('contract_multiplier', sa.Float),
+        sa.Column('children', sa.Text),
     )
 
 

@@ -28,6 +28,7 @@ from nose_parameterized import parameterized
 import nose.tools as nt
 import pytz
 import itertools
+import json
 
 import pandas as pd
 import numpy as np
@@ -2508,6 +2509,54 @@ class TestPerformanceTracker(unittest.TestCase):
         # Ensure that the dividend for sid 1 has been removed from dividend
         # frame
         self.assertNotIn(1, perf_tracker.dividend_frame['sid'].values)
+
+    def test_cascade(self):
+        env = TradingEnvironment()
+
+        metadata = {4: {'symbol': 'TEST4', 'asset_type': 'future', 'children':
+                        json.dumps(['TEST5'])},
+                    5: {'symbol': 'TEST5', 'asset_type': 'future',
+                        'children': json.dumps(['TEST4', 'TEST6'])},
+                    6: {'symbol': 'TEST6', 'asset_type': 'future'}}
+        env.write_data(futures_data=metadata)
+        pt = perf.PositionTracker(env.asset_finder)
+        dt = pd.Timestamp("1984/03/06 3:00PM")
+        pos1 = perf.Position(4, amount=np.float64(120.0),
+                             last_sale_date=dt, last_sale_price=3.4)
+        pos2 = perf.Position(5, amount=np.float64(-100.0),
+                             last_sale_date=dt, last_sale_price=3.4)
+        pos3 = perf.Position(6, amount=np.float64(10.0),
+                             last_sale_date=dt, last_sale_price=3.4)
+        pt.update_positions({4: pos1, 5: pos2, 6: pos3})
+
+        event_type = DATASOURCE_TYPE.CASCADE_POSITION
+        index = [dt + timedelta(days=1)]
+        pan = pd.Panel({4: pd.DataFrame({'price': 1, 'volume': 0,
+                                         'type': event_type}, index=index),
+                        5: pd.DataFrame({'price': 1, 'volume': 0,
+                                         'type': event_type}, index=index),
+                        6: pd.DataFrame({'price': 1, 'volume': 0,
+                                         'type': event_type}, index=index)})
+        source = DataPanelSource(pan)
+        for event in source:
+            txns = pt.maybe_create_cascade_transaction(event)
+            if event.sid == 4:
+                # Test owned long
+                self.assertEqual(-120, txns[0].amount)
+                self.assertEqual(4, txns[0].sid)
+                self.assertEqual(120, txns[1].amount)
+                self.assertEqual(5, txns[1].sid)
+            elif event.sid == 5:
+                # Test owned short
+                self.assertEqual(100, txns[0].amount)
+                self.assertEqual(5, txns[0].sid)
+                self.assertEqual(-100, txns[1].amount)
+                self.assertEqual(4, txns[1].sid)
+                self.assertEqual(-100, txns[2].amount)
+                self.assertEqual(6, txns[2].sid)
+            elif event.sid == 6:
+                # Test not-owned SID
+                self.assertIsNone(txns)
 
     def test_serialization(self):
         start_dt = datetime(year=2008,

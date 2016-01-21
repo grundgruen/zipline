@@ -367,6 +367,41 @@ class PositionTracker(object):
         )
         return txn
 
+    def maybe_create_cascade_transaction(self, event):
+        asset = self.asset_finder.retrieve_asset(event.sid)
+        try:
+            pos = self.positions[event.sid]
+            amount = pos.amount
+            if amount == 0 or not asset.children:
+                return None
+        except KeyError:
+            return None
+        if 'price' in event:
+            price = event.price
+        else:
+            price = pos.last_sale_price
+        txns = []
+        txns.append(Transaction(
+            sid=event.sid,
+            amount=(-1 * self.positions[event.sid].amount),
+            dt=event.dt,
+            price=price,
+            commission=0,
+            order_id=0
+        ))
+
+        for child in asset.children:
+            sid = self.asset_finder.lookup_future_symbol(child).sid
+            txns.append(Transaction(
+                sid=sid,
+                amount=self.positions[event.sid].amount,
+                dt=event.dt,
+                price=price,
+                commission=0,
+                order_id=0))
+
+        return txns
+
     def get_positions(self):
 
         positions = self._positions_store
